@@ -56,11 +56,23 @@ class FakeTextDataGenerator(object):
         output_bboxes=0,
     ):
         image = None
-
+        if margins[0] == -1:
+            margins = [
+                rnd.randrange(3, 7),
+                rnd.randrange(3, 25),
+                rnd.randrange(3, 7),
+                rnd.randrange(3, 25),
+            ]
         margin_top, margin_left, margin_bottom, margin_right = margins
         horizontal_margin = margin_left + margin_right
         vertical_margin = margin_top + margin_bottom
 
+        # 随机使用背景
+        if background_type == -1:
+            background_type = rnd.choice([0, 1, 2, 3])
+            # 为防止与背景颜色冲突过大
+            text_color = '#000000,#444444' if background_type == 3 else text_color
+            blur = 1 if background_type == 3 else blur
         ##########################
         # Create picture of text #
         ##########################
@@ -72,7 +84,7 @@ class FakeTextDataGenerator(object):
             image, mask = computer_text_generator.generate(
                 text,
                 font,
-                text_color,
+                text_color, 
                 size,
                 orientation,
                 space_width,
@@ -95,6 +107,10 @@ class FakeTextDataGenerator(object):
         #############################
         # Apply distorsion to image #
         #############################
+        if distorsion_type == -1:
+            distorsion_type = rnd.choice([0, 1, 2, 3])
+        if distorsion_orientation == -1:
+            distorsion_orientation = rnd.choice([0, 1])
         if distorsion_type == 0:
             distorted_img = rotated_img  # Mind = blown
             distorted_mask = rotated_mask
@@ -187,10 +203,10 @@ class FakeTextDataGenerator(object):
             background_img_px_mean = sum(background_img_st.mean) / 3
 
             if abs(resized_img_px_mean - background_img_px_mean) < 15:
-                print("value of mean pixel is too similar. Ignore this image")
+                #print("value of mean pixel is too similar. Ignore this image")
 
-                print("resized_img_st \n {}".format(resized_img_st.mean))
-                print("background_img_st \n {}".format(background_img_st.mean))
+                #print("resized_img_st \n {}".format(resized_img_st.mean))
+                #print("background_img_st \n {}".format(background_img_st.mean))
 
                 return
         except Exception as err:
@@ -238,7 +254,7 @@ class FakeTextDataGenerator(object):
         #######################
 
         gaussian_filter = ImageFilter.GaussianBlur(
-            radius=blur if not random_blur else rnd.randint(0, blur)
+            radius=blur if not random_blur else rnd.random()*blur
         )
         final_image = background_img.filter(gaussian_filter)
         final_mask = background_mask.filter(gaussian_filter)

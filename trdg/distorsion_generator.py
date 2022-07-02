@@ -23,18 +23,21 @@ def _apply_func_distorsion(image, mask, vertical, horizontal, max_offset, func):
     img_arr = np.array(rgb_image)
     mask_arr = np.array(rgb_mask)
 
-    vertical_offsets = [func(i) for i in range(img_arr.shape[1])]
-    horizontal_offsets = [
-        func(i)
-        for i in range(
-            img_arr.shape[0]
-            + (
-                (max(vertical_offsets) - min(min(vertical_offsets), 0))
-                if vertical
-                else 0
+    try:
+        vertical_offsets = [func(i) for i in range(img_arr.shape[1])]
+        horizontal_offsets = [
+            func(i)
+            for i in range(
+                img_arr.shape[0]
+                + (
+                    (max(vertical_offsets) - min(min(vertical_offsets), 0))
+                    if vertical
+                    else 0
+                )
             )
-        )
-    ]
+        ]
+    except:
+        return image, mask
 
     new_img_arr = np.zeros(
         (

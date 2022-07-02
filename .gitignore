@@ -101,3 +101,12 @@ ENV/
 .mypy_cache/
 
 .vscode/*
+
+tools/
+out/
+trdg/nohup.out
+trdg/*out*
+trdg/log*
+trdg/fonts
+trdg/images/*
+trdg/*.zip

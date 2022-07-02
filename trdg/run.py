@@ -154,7 +154,7 @@ def parse_arguments():
     parser.add_argument(
         "-bl",
         "--blur",
-        type=int,
+        type=float,
         nargs="?",
         help="Apply gaussian blur to the resulting sample. Should be an integer defining the blur radius",
         default=0,
@@ -171,8 +171,8 @@ def parse_arguments():
         "--background",
         type=int,
         nargs="?",
-        help="Define what kind of background to use. 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Image",
-        default=0,
+        help="Define what kind of background to use. -1:random 0: Gaussian Noise, 1: Plain white, 2: Quasicrystal, 3: Image",
+        default=-1,
     )
     parser.add_argument(
         "-hw",
@@ -214,8 +214,8 @@ def parse_arguments():
         "--distorsion_orientation",
         type=int,
         nargs="?",
-        help="Define the distorsion's orientation. Only used if -d is specified. 0: Vertical (Up and down), 1: Horizontal (Left and Right), 2: Both",
-        default=0,
+        help="Define the distorsion's orientation. Only used if -d is specified. 0: Vertical (Up and down), 1: Horizontal (Left and Right), 2: Both, -1: random",
+        default=-1,
     )
     parser.add_argument(
         "-wd",
@@ -352,7 +352,7 @@ def main():
 
     # Create the directory if it does not exist.
     try:
-        os.makedirs(args.output_dir)
+        os.makedirs(args.output_dir, exist_ok=True)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -378,6 +378,8 @@ def main():
     elif args.font:
         if os.path.isfile(args.font):
             fonts = [args.font]
+        elif os.path.isdir(args.font):
+            fonts = [os.path.join(args.font, font) for font in os.listdir(args.font)]
         else:
             sys.exit("Cannot open font")
     else:
@@ -409,7 +411,7 @@ def main():
             args.name_format = 2
     else:
         strings = create_strings_from_dict(
-            args.length, args.random, args.count, lang_dict
+            args.length, args.random, args.count, lang_dict, args.language.startswith('cn'), args.language.startswith('en')
         )
 
     if args.language == "ar":
@@ -466,6 +468,8 @@ def main():
             ),
         ),
         total=args.count,
+        mininterval=60,
+        maxinterval=600,
     ):
         pass
     p.terminate()

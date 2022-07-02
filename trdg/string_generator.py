@@ -1,3 +1,4 @@
+# coding=utf-8
 import random as rnd
 import re
 import string
@@ -26,19 +27,45 @@ def create_strings_from_file(filename, count):
     return strings
 
 
-def create_strings_from_dict(length, allow_variable, count, lang_dict):
+def create_strings_from_dict(length, allow_variable, count, lang_dict, cn_text_rndshuffle=False, en_text_rndshuffle=False):
     """
         Create all strings by picking X random word in the dictionnary
     """
-
+    other_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¥‘“”…₩€、。《》【】！（），；？￡"
+    
     dict_len = len(lang_dict)
     strings = []
     for _ in range(0, count):
         current_string = ""
-        for _ in range(0, rnd.randint(1, length) if allow_variable else length):
-            current_string += lang_dict[rnd.randrange(dict_len)]
-            current_string += " "
-        strings.append(current_string[:-1])
+        for _ in range(0, rnd.randint(2, length) if allow_variable else length):
+            target_string: str = lang_dict[rnd.randrange(dict_len)]
+            # 中文数据生成，写死了，根据一定的比例添加其他的字符进去
+            if cn_text_rndshuffle:
+                current_string += target_string
+                # 随即添加
+                if rnd.random() < 0.2:
+                    current_string += rnd.choice(list(other_chars))
+                elif rnd.random() < 0.05: # 特别建议中文生成空格参数sw为3
+                    current_string += " "
+            # 英文数据生成随机大小写
+            elif en_text_rndshuffle:
+                p = rnd.random()
+                if p < 0.3: # 随机全部大写
+                    target_string = target_string.upper()
+                elif p >= 0.3 and p < 0.6: # 随机首字母大写
+                    target_string = target_string.capitalize()
+                elif p >= 0.6 and p < 0.7: # 随机大小写
+                    target_string = list(target_string)
+                    for i in range(len(target_string)):
+                        if rnd.random() < 0.5:
+                            target_string[i] = target_string[i].swapcase()
+                    target_string = ''.join(target_string)
+                current_string += target_string
+                current_string += " "
+            else:
+                current_string += target_string
+                current_string += " "
+        strings.append(current_string.strip(' ')) # 务必不在两头添加空格
     return strings
 
 
@@ -51,10 +78,11 @@ def create_strings_from_wikipedia(minimum_length, count, lang):
     while len(sentences) < count:
         # We fetch a random page
 
-        page_url = "https://{}.wikipedia.org/wiki/Special:Random".format(lang)
+        page_url = "https://{}.volupedia.org/wiki/Special:Random".format(lang)
         try:
             page = requests.get(page_url, timeout=3.0)  # take into account timeouts
         except requests.exceptions.Timeout:
+            print('timeout')
             continue
 
         soup = BeautifulSoup(page.text, "html.parser")
@@ -118,7 +146,7 @@ def create_strings_randomly(length, allow_variable, count, let, num, sym, lang):
     if num:
         pool += "0123456789"
     if sym:
-        pool += "!\"#$%&'()*+,-./:;?@[\\]^_`{|}~"
+        pool += " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¥‘“”…₩€、。《》【】！（），；？￡"
 
     if lang == "cn":
         min_seq_len = 1
@@ -127,8 +155,8 @@ def create_strings_randomly(length, allow_variable, count, let, num, sym, lang):
         min_seq_len = 1
         max_seq_len = 2
     else:
-        min_seq_len = 2
-        max_seq_len = 10
+        min_seq_len = 3
+        max_seq_len = 7
 
     strings = []
     for _ in range(0, count):
