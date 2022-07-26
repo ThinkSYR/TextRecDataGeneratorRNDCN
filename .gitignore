@@ -110,3 +110,6 @@ trdg/log*
 trdg/fonts
 trdg/images/*
 trdg/*.zip
+test_trdg_debug/*
+trdg/bgimg
+debug*
