@@ -339,6 +339,14 @@ def parse_arguments():
         help="Define the image mode to be used. RGB is default, L means 8-bit grayscale images, 1 means 1-bit binary images stored with one pixel per byte, etc.",
         default="RGB",
     )
+    parser.add_argument(
+        "-ln",
+        "--label_name",
+        type=str,
+        nargs="?",
+        help=".",
+        default="labels.txt",
+    )
     return parser.parse_args()
 
 
@@ -476,15 +484,17 @@ def main():
 
     if args.name_format == 2:
         # Create file with filename-to-label connections
+        label_dir = os.path.dirname(args.output_dir)
+        base_imgdir = os.path.basename(args.output_dir)
         with open(
-            os.path.join(args.output_dir, "labels.txt"), "w", encoding="utf8"
+            os.path.join(label_dir, args.label_name), "w", encoding="utf8"
         ) as f:
             for i in range(string_count):
-                file_name = str(i) + "." + args.extension
+                file_name = os.path.join(base_imgdir, str(i) + "." + args.extension)
                 label = strings[i]
                 if args.space_width == 0:
                     label = label.replace(" ", "")
-                f.write("{} {}\n".format(file_name, label))
+                f.write("{}\t{}\n".format(file_name, label))
 
 
 if __name__ == "__main__":

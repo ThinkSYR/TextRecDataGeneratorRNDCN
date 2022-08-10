@@ -32,12 +32,15 @@ def create_strings_from_dict(length, allow_variable, count, lang_dict, cn_text_r
         Create all strings by picking X random word in the dictionnary
     """
     other_chars = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¥‘“”…₩€、。《》【】！（），；？￡"
-    
+    other_chars_en = "0123456789!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~¥°±´·×"
+    other_chars_num = "0123456789-#()*/_"
     dict_len = len(lang_dict)
     strings = []
     for _ in range(0, count):
         current_string = ""
         for _ in range(0, rnd.randint(2, length) if allow_variable else length):
+            if len(current_string) > 20:
+                break
             target_string: str = lang_dict[rnd.randrange(dict_len)]
             # 中文数据生成，写死了，根据一定的比例添加其他的字符进去
             if cn_text_rndshuffle:
@@ -50,18 +53,33 @@ def create_strings_from_dict(length, allow_variable, count, lang_dict, cn_text_r
             # 英文数据生成随机大小写
             elif en_text_rndshuffle:
                 p = rnd.random()
-                if p < 0.3: # 随机全部大写
-                    target_string = target_string.upper()
-                elif p >= 0.3 and p < 0.6: # 随机首字母大写
-                    target_string = target_string.capitalize()
-                elif p >= 0.6 and p < 0.7: # 随机大小写
+                if p < 0.05: # 不变字符
+                    target_string += ' '
+                elif p >=0.05 and p < 0.1: # 随机全部大写
+                    target_string = target_string.upper() + ' '
+                elif p >= 0.1 and p < 0.15: # 随机首字母大写
+                    target_string = target_string.capitalize() + ' '
+                elif p >= 0.15 and p < 0.3: # 纯数字
+                    target_string = [rnd.choice(list("0123456789")) for _ in range(len(target_string))]
+                    target_string = ''.join(target_string)
+                elif p >= 0.3 and p < 0.7: # 随机变换数字字符
+                    target_string = list(target_string)
+                    for i in range(len(target_string)):
+                        if rnd.random() < 0.4:
+                            target_string[i] = target_string[i].swapcase()
+                        elif rnd.random() < 0.75: # 新加的，生成英文数据时也随机改成其他字符
+                            target_string[i] = rnd.choice(list(other_chars_num))
+                    target_string = ''.join(target_string)
+                elif p >= 0.7 and p < 1: # 随机变换字符
                     target_string = list(target_string)
                     for i in range(len(target_string)):
                         if rnd.random() < 0.5:
                             target_string[i] = target_string[i].swapcase()
+                        elif rnd.random() < 0.8: # 新加的，生成英文数据时也随机改成其他字符
+                            target_string[i] = rnd.choice(list(other_chars_en))
                     target_string = ''.join(target_string)
+
                 current_string += target_string
-                current_string += " "
             else:
                 current_string += target_string
                 current_string += " "
@@ -146,7 +164,8 @@ def create_strings_randomly(length, allow_variable, count, let, num, sym, lang):
     if num:
         pool += "0123456789"
     if sym:
-        pool += " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¥‘“”…₩€、。《》【】！（），；？￡"
+        # pool += " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~¥‘“”…₩€、。《》【】！（），；？￡"
+        pool += "!\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~¥°±´·×"
 
     if lang == "cn":
         min_seq_len = 1
