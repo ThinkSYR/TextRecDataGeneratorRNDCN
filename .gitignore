@@ -110,5 +110,6 @@ trdg/log*
 trdg/images/*
 trdg/*.zip
 test_trdg_debug/*
-trdg/bgimg
+test.txt
+# trdg/bgimg
 debug*

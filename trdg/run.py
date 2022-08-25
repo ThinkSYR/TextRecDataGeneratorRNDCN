@@ -418,8 +418,10 @@ def main():
         ):
             args.name_format = 2
     else:
+        # 韩文数据这块生成 要随机加一些其他字符进去混合生成，和中文类似，所以：
+        cn_text_rndshuffle = args.language.startswith('cn') or args.language.startswith('ko')
         strings = create_strings_from_dict(
-            args.length, args.random, args.count, lang_dict, args.language.startswith('cn'), args.language.startswith('en')
+            args.length, args.random, args.count, lang_dict, cn_text_rndshuffle, args.language.startswith('en')
         )
 
     if args.language == "ar":
